@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component size="270,86" bgColorEnabled="true" bgColor="#383838">
+  <displayList>
+    <component id="n3_kbb0" name="check" src="xualt" fileName="Button/Checkbox.xml" pkg="nk9ejx23" xy="94,8" size="173,19"/>
+    <text id="n1_edka" name="n1" xy="4,8" size="71,19" fontSize="12" color="#bdbdbd" align="center" autoSize="none" text="是否多语言"/>
+    <text id="n4_kbb0" name="n4" xy="20,38" size="243,44" fontSize="12" color="#666666" autoSize="none" text="1、一般用于Loader图片标记是否存在切换&#xA;2、文本也可以标记"/>
+  </displayList>
+</component>

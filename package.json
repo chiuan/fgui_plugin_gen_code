@@ -1,0 +1,11 @@
+{
+	"name": "gen_code",
+	"displayName": "导出代码工具",
+	"description": "多语言标记+导出代码标记+导出工具",
+	"version": "0.0.1",
+	"author": {
+		"name": "chiuan"
+	},
+	"icon": "icon.png",
+	"main": "main.js"
+}
