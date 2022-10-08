@@ -1,5 +1,6 @@
 import { FairyGUI, FairyEditor, System } from 'csharp';
 import { genCodeTs } from './GenCode_TypeScript';
+import { genCodeCS } from './GenCode_CSharp';
 
 const App = FairyEditor.App;
 
@@ -57,7 +58,7 @@ class ExportCodeFlagInspector extends FairyEditor.View.PluginInspector {
 //Register a inspector
 App.inspectorView.AddInspector(() => new ExportCodeFlagInspector(), "GenCodeFlag", "标记是否生成代码");
 //Condition to show it
-// App.docFactory.ConnectInspector("GenCodeFlag", "mixed", true, false);
+//App.docFactory.ConnectInspector("GenCodeFlag", "mixed", true, false);
 App.docFactory.ConnectInspector("GenCodeFlag", "component", false, false);
 App.docFactory.ConnectInspector("GenCodeFlag", "component", true, false);
 
@@ -137,7 +138,9 @@ function onPublish(handler: FairyEditor.PublishHandler) {
     handler.genCode = false; //prevent default output
 
     console.log('开始生成代码');
-    genCodeTs(handler); //do it myself
+
+    // genCodeTs(handler); 
+    genCodeCS(handler);
 }
 
 function onDestroy() {

@@ -17,14 +17,14 @@ class GenClassInfo {
 
 let exportLangKV = new Map<string, string>()
 
-function genCodeTs(handler: FairyEditor.PublishHandler) {
+function genCodeCS(handler: FairyEditor.PublishHandler) {
     let settings = (<FairyEditor.GlobalPublishSettings>handler.project.GetSettings("Publish")).codeGeneration;
     let codePkgName = handler.ToFilename(handler.pkg.name); //convert chinese to pinyin, remove special chars etc.
     let exportCodePath = handler.exportCodePath + '/' + codePkgName;
 
     //CollectClasses(stripeMemeber, stripeClass, fguiNamespace)
     let classes = handler.CollectClasses(settings.ignoreNoname, settings.ignoreNoname, null);
-    handler.SetupCodeFolder(exportCodePath, "ts"); //check if target folder exists, and delete old files
+    handler.SetupCodeFolder(exportCodePath, "cs"); //check if target folder exists, and delete old files
 
     let getMemberByName = settings.getMemberByName;
 
@@ -54,8 +54,10 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
         let members = classInfo.members;
         writer.reset();
 
-        writer.writeln('import { FairyGUI } from \'csharp\';');
-        writer.writeln('import { BaseUI } from "../../../framework/ui/BaseUI";')
+        writer.writeln('using Game;');
+        writer.writeln('using FairyGUI;');
+        writer.writeln('using UnityEngine;');
+        writer.writeln('using System;');
         writer.writeln();
 
         let otherPkgName: Array<string> = new Array<string>()
@@ -81,7 +83,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                         let className = "Gen_" + element.res.name + "_" + element.res.owner.name
                         if (otherPkgName.indexOf(className) == -1) {
                             otherPkgName.push(className)
-                            writer.writeln('import { %s } from "./%s";', className, className)
+                            // writer.writeln('import { %s } from "./%s";', className, className)
                         }
                     } else {
                         // 生成绑定ext类
@@ -93,7 +95,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                         let className = "Gen_" + element.res.name
                         if (otherPkgName.indexOf(className) == -1) {
                             otherPkgName.push(className)
-                            writer.writeln('import { %s } from "../%s/%s";', className + "_" + element.res.owner.name, element.res.owner.name, className + "_" + element.res.owner.name)
+                            // writer.writeln('import { %s } from "../%s/%s";', className + "_" + element.res.owner.name, element.res.owner.name, className + "_" + element.res.owner.name)
                         }
                     }
                 }
@@ -102,13 +104,13 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
 
         // classInfo.superClassName = GComponent GButton这种
         writer.writeln()
-        writer.writeln('export class %s extends BaseUI', classInfo.className + "_" + handler.pkg.name);
+        writer.writeln('public class %s : BaseUI', classInfo.className + "_" + handler.pkg.name);
         writer.startBlock();
         writer.writeln()
 
         // 写一下这个界面的常量
-        writer.writeln('public readonly URL_ID:string = "ui://%s%s";', handler.pkg.id, classInfo.resId);
-        writer.writeln('com : FairyGUI.GComponent');
+        writer.writeln('public readonly string URL_ID = "ui://%s%s";', handler.pkg.id, classInfo.resId);
+        writer.writeln('private FairyGUI.GComponent com;');
         // writer.writeln('public readonly URL:string = "ui://%s/%s";', handler.pkg.name, classInfo.resName);
         writer.writeln()
 
@@ -124,7 +126,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                     if (checkPackageItemIsGenCode(handler, element.res) && element.res.exported) {
                         // 生成BaseUI类
                         let className = "Gen_" + element.res.name + "_" + element.res.owner.name
-                        writer.writeln('%s : %s', element.varName, className)
+                        writer.writeln('public %s %s;',className, element.varName)
 
                         genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, className, true))
                     }
@@ -134,7 +136,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                         let superClassName = desc?.GetAttribute("extention")
                         if (!superClassName) {
                             // null = GComponent
-                            writer.writeln('%s : FairyGUI.GComponent', element.varName)
+                            writer.writeln('public FairyGUI.GComponent %s;', element.varName)
 
                             genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, "GComponent", false))
 
@@ -143,7 +145,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                                 langTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, superClassName, false))
                             }
                         } else {
-                            writer.writeln('%s : FairyGUI.G%s', element.varName, superClassName)
+                            writer.writeln('public FairyGUI.G%s %s;',superClassName, element.varName)
 
                             genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, "G" + superClassName, false))
 
@@ -159,13 +161,13 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                         // console.log("引用其他包的资源可以生成代码:" + element.res.owner.name + "." + element.res.name)
 
                         let className = "Gen_" + element.res.name + "_" + element.res.owner.name
-                        writer.writeln('%s : %s', element.varName, className)
+                        writer.writeln('public %s %s;',className, element.varName)
 
                         genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, className, true))
                     } else {
                         let superClassName = checkOtherPackageItemExtension(element.res)
                         if (superClassName) {
-                            writer.writeln('%s : FairyGUI.G%s', element.varName, superClassName)
+                            writer.writeln('public FairyGUI.G%s %s;',superClassName, element.varName)
 
                             genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, "G" + superClassName, false))
 
@@ -177,7 +179,7 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
                 }
             } else {
                 // fgui 默认的组件变量即可
-                writer.writeln('%s : FairyGUI.%s', element.varName, element.type)
+                writer.writeln('public FairyGUI.%s %s;',element.type, element.varName)
 
                 genClassTypeMap.set(element.varName, new GenClassInfo(element.name, element.varName, element.type, false))
 
@@ -189,71 +191,70 @@ function genCodeTs(handler: FairyEditor.PublishHandler) {
         writer.writeln()
 
         // 构造函数
-        writer.writeln('constructor()')
+        writer.writeln('public %s()',classInfo.className + "_" + handler.pkg.name)
         writer.startBlock()
-        writer.writeln('super()')
         // writer.writeln('this.layerName = UILayer.Normal')
-        writer.writeln('this.packageName = "%s"', handler.pkg.name)
+        writer.writeln('this.packageName = "%s";', handler.pkg.name)
         writer.writeln('this.componentName = "%s";', classInfo.resName)
         writer.endBlock()
         writer.writeln()
 
-        writer.writeln('public bindAll(com: FairyGUI.GComponent)')
+        writer.writeln('public new %s bindAll(FairyGUI.GComponent com)',classInfo.className + "_" + handler.pkg.name)
         writer.startBlock()
-        writer.writeln('this.com = com')
+        writer.writeln('this.com = com;')
         // 开始绑定组件get
         genClassTypeMap.forEach((v, k) => {
             if (v.customType) {
-                writer.writeln("this." + k + " = new %s().bindAll(com.GetChild('%s')?.asCom)", v.supertype, v.name)
+                writer.writeln("this." + k + " = new %s().bindAll(com.GetChild(\"%s\")?.asCom);", v.supertype, v.name)
             } else {
                 if (v.supertype == "Controller") {
-                    writer.writeln("this." + k + " = com.GetController('%s')", v.name)
+                    writer.writeln("this." + k + " = com.GetController(\"%s\");", v.name)
                 }
                 else if (v.supertype == "Transition") {
-                    writer.writeln("this." + k + " = com.GetTransition('%s')", v.name)
+                    writer.writeln("this." + k + " = com.GetTransition(\"%s\");", v.name)
                 }
                 else {
-                    writer.writeln("this." + k + " = com.GetChild('%s') as FairyGUI.%s", v.name, v.supertype)
+                    writer.writeln("this." + k + " = com.GetChild(\"%s\") as FairyGUI.%s;", v.name, v.supertype)
                 }
             }
         })
 
         // 开始写多语言的组件绑定
         writer.writeln()
-        writer.writeln('if(!this.useLang) return this')
+        writer.writeln('if(!this.useLang) return this;')
         writer.writeln()
 
         // 多语言组件绑定
         langTypeMap.forEach((v, k) => {
             if (v.supertype == "GLoader") {
-                writer.writeln('this.' + k + ".url = this.getLangText('%s')", handler.pkg.name + "." + classInfo.resName + "." + v.name)
+                writer.writeln('this.' + k + ".url = this.getLangText(\"%s\");", handler.pkg.name + "." + classInfo.resName + "." + v.name)
             }
             else if (v.supertype == "GTextField") {
-                writer.writeln('this.' + k + ".text = this.getLangText('%s')", handler.pkg.name + "." + classInfo.resName + "." + v.name)
+                writer.writeln('this.' + k + ".text = this.getLangText(\"%s\");", handler.pkg.name + "." + classInfo.resName + "." + v.name)
             }
             else if (v.supertype == "GRichTextField") {
-                writer.writeln('this.' + k + ".text = this.getLangText('%s')", handler.pkg.name + "." + classInfo.resName + "." + v.name)
+                writer.writeln('this.' + k + ".text = this.getLangText(\"%s\");", handler.pkg.name + "." + classInfo.resName + "." + v.name)
             }
             else if (v.supertype == "Button" || v.supertype == "Label" || v.supertype == "GButton" || v.supertype == "GLabel") {
-                writer.writeln('this.' + k + ".title = this.getLangText('%s')", handler.pkg.name + "." + classInfo.resName + "." + v.name)
+                writer.writeln('this.' + k + ".title = this.getLangText(\"%s\");", handler.pkg.name + "." + classInfo.resName + "." + v.name)
             }
         })
 
         writer.writeln()
-        writer.writeln('return this')
+        writer.writeln('return this;')
         writer.endBlock()
         writer.writeln()
 
-        writer.writeln('public onAwake(...args: any): void {}')
-        writer.writeln()
-        writer.writeln('public onShow(...args: any): void {}')
-        writer.writeln()
-        writer.writeln('public onClose(...args: any): void {}')
-        writer.writeln()
+        // writer.writeln('public onAwake(...args: any): void {}')
+        // writer.writeln()
+        // writer.writeln('public onShow(...args: any): void {}')
+        // writer.writeln()
+        // writer.writeln('public onClose(...args: any): void {}')
+        // writer.writeln()
 
         writer.endBlock();
 
-        writer.save(exportCodePath + '/' + classInfo.className + "_" + handler.pkg.name + '.ts');
+        writer.save(exportCodePath + '/' + classInfo.className + "_" + handler.pkg.name + '.cs');
 
         exportClassList.push(classInfo.className)
     }
@@ -428,4 +429,4 @@ function logClassInfo(ci: FairyEditor.PublishHandler.ClassInfo) {
     }
 }
 
-export { genCodeTs };
+export { genCodeCS };
