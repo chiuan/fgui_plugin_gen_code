@@ -2,7 +2,7 @@
 fgui的插件-生成ts、cs代码-基于puerts
 
 * 特别的BaseUI.ts是界面管理类，拥有打开界面的流程管理，以及一些基础界面的接口api
-* 生成cs还是ts代码的话需要自己修改main.ts
+* 生成cs还是ts代码的话需要自己修改main.ts然后编译一下插件即可
 ```ts
 function onPublish(handler: FairyEditor.PublishHandler) {
     if (!handler.genCode) return;
