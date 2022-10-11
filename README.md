@@ -1,6 +1,7 @@
 # fgui_plugin_gen_code
-fgui的插件-生成ts、cs代码-基于puerts
+fgui的插件-生成ts、cs代码
 
+* ts是指unity里面使用puerts
 * 特别的BaseUI.ts是界面管理类，拥有打开界面的流程管理，以及一些基础界面的接口api
 * 生成cs还是ts代码的话需要自己修改main.ts然后编译一下插件即可
 ```ts
