@@ -41,6 +41,7 @@ namespace Game
         * 一般用于底部几个需要缓存的主界面
         */
         private bool dontDestroyWhenClose = false;
+
         public bool DontDestroyWhenClose
         {
             get { return dontDestroyWhenClose; }
@@ -50,6 +51,7 @@ namespace Game
         * 关闭所有界面接口不关闭这个界面例如加载进度界面
         */
         private bool mDontDestroyAtCloseAll = false;
+
         public bool DontDestroyAtCloseAll
         {
             get { return mDontDestroyAtCloseAll; }
@@ -66,13 +68,13 @@ namespace Game
 
         // 是否使用多语言
         protected bool useLang = true;
-        
+
         // 自动绑定FairyGUI元件
         public BaseUI bindAll(FairyGUI.GComponent com)
         {
             return this;
         }
-        
+
         // 读取配置表获取多语言文本
         protected string getLangText(string key)
         {
@@ -83,17 +85,17 @@ namespace Game
         {
             get { return this.view?.visible ?? false; }
         }
-        
+
         protected FairyGUI.GObject getChild(string child)
         {
             return this.view?.GetChild(child);
         }
-        
+
         public FairyGUI.GComponent getView()
         {
             return this.view;
         }
-        
+
         /**
         * 设置是否需要播放动画
         */
@@ -110,7 +112,7 @@ namespace Game
         {
             return false;
         }
-        
+
         /**
         * 获取这个界面需要加载的fgui的资源名称:例如item包括依赖的包
         */
@@ -123,8 +125,10 @@ namespace Game
                 ret.Add(this.packageName);
             }
 
-            if (this.dependencies?.Count > 0) {
-                for (int index = 0; index < this.dependencies.Count; index++) {
+            if (this.dependencies?.Count > 0)
+            {
+                for (int index = 0; index < this.dependencies.Count; index++)
+                {
                     var element = this.dependencies[index];
                     ret.Add(element);
                 }
@@ -132,7 +136,7 @@ namespace Game
 
             return ret;
         }
-        
+
         /**
         * 获取这个界面需要的动态配置表文件名,不带后缀
         */
@@ -140,8 +144,9 @@ namespace Game
         {
             return this.configRes;
         }
-        
-        public BaseUI createUI(params object[] args) {
+
+        public BaseUI createUI(params object[] args)
+        {
             // 创建界面
             this.view = FairyGUI.UIPackage.CreateObject(
                 this.packageName,
@@ -151,12 +156,11 @@ namespace Game
             // 绑定一下界面上的导出组件
             this.bindAll(this.view);
 
-            // ! 添加到指定的UI层显示
-            // let layer = S.UIManager.getLayer(this.layerName.toString())
-            // if (this.view) {
-            //     layer.AddChild(this.view)
-            // }
+            // 添加到指定的UI层显示
+            var layer = UIMgr.Instance.getLayer(this.layerName.ToString());
+            layer?.AddChild(this.view);
 
+            // 是否全屏界面
             if (this.isFullScreen)
             {
                 this.view?.MakeFullScreen();
@@ -164,8 +168,9 @@ namespace Game
 
             return this;
         }
-        
-        protected void addCurrentViewToLayer(UILayer newLayer) {
+
+        protected void addCurrentViewToLayer(UILayer newLayer)
+        {
             // let layer = S.UIManager.getLayer(this.layerName.toString())
             // if (this.view) {
             //     // ! 先从添加过的父物体移除
@@ -179,48 +184,66 @@ namespace Game
                 this.view?.MakeFullScreen();
             }
         }
-        
-        public void destroyUI(bool force) {
+
+        public void destroyUI(bool force)
+        {
             // console.warn("destryUI : " + this.componentName + " - " + this.view?.packageItem.name)
 
             // 移除这个UI对象身上的事件监听
 
             // 移除这个对象身上的计时器
 
-            if (this.view?.displayObject != null) {
+            if (this.view?.displayObject != null)
+            {
             }
 
             // 执行一次销毁
-            try {
+            try
+            {
                 this.onDestroy();
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.LogException(e);
             }
 
             // 释放显示的对象
-            if (this.dontDestroyWhenClose == false || force) {
+            if (this.dontDestroyWhenClose == false || force)
+            {
                 this.view?.Dispose();
                 this.view = null;
-            } else {
+            }
+            else
+            {
                 if (this.view?.displayObject != null)
                 {
                     this.view.visible = false;
                 }
             }
         }
-        
-        public async UniTask waitUntilDestroy() {
-            while(this.isOpen)
+
+        public async UniTask waitUntilDestroy()
+        {
+            while (this.isOpen)
             {
                 await UniTask.Yield();
             }
         }
-        
-        protected virtual void onDestroy() { }
-        public virtual void onAwake(params object[] args){}
-        public virtual void onShow(params object[] args){}
-        public virtual void onClose(params object[] args){}
-        
+
+        protected virtual void onDestroy()
+        {
+        }
+
+        public virtual void onAwake(params object[] args)
+        {
+        }
+
+        public virtual void onShow(params object[] args)
+        {
+        }
+
+        public virtual void onClose(params object[] args)
+        {
+        }
     }
 }

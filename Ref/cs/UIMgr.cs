@@ -4,11 +4,12 @@ using Cysharp.Threading.Tasks;
 using GameCreator.Runtime.Common;
 using UnityEngine;
 
-namespace Game.Framework
+namespace Game
 {
     public partial class UIMgr : Singleton<UIMgr>
     {
         private bool isInit;
+        private bool isIniting;
         private FairyGUI.GComponent uiRoot;
         private List<BaseUI> uiList = new List<BaseUI>();
         private Dictionary<string, List<BaseUI>> uiQueue = new Dictionary<string, List<BaseUI>>();
@@ -17,25 +18,39 @@ namespace Game.Framework
         /**
         * 初始化fairyGUI的层级和展示对象到场景
         */
-        public async UniTask init()
+        public async UniTask Init()
         {
+            while (isIniting)
+            {
+                await UniTask.Yield();
+            }
+            
             if (this.isInit)
             {
                 await UniTask.CompletedTask;
                 return;
             }
 
-            this.isInit = true;
+            isIniting = true;
+            
+            // * 必须先生成界面打开需要的层级
+            await ResMgr.LoadFairyGUIPackage("common");
 
-            // 必须先生成界面打开需要的层级
-            await ResMgr.LoadFairyGUIPackage("loading_fui.bytes", "loading");
+            // * 初始化游戏里面的界面的层级
+            await ResMgr.LoadFairyGUIPackage("loading");
             this.uiRoot = FairyGUI.UIPackage.CreateObject("loading", "UIRoot").asCom;
             FairyGUI.GRoot.inst.AddChild(this.uiRoot);
+
+            this.isInit = true;
+            this.isIniting = false;
         }
-        
-        private BaseUI _getOrCreateUI<T>() where T : BaseUI {
-            for (int i = 0; i < this._uiClassInstance.Count; ++i) {
-                if (this._uiClassInstance[i].tag == typeof(T)) {
+
+        private BaseUI _getOrCreateUI<T>() where T : BaseUI
+        {
+            for (int i = 0; i < this._uiClassInstance.Count; ++i)
+            {
+                if (this._uiClassInstance[i].tag == typeof(T))
+                {
                     return this._uiClassInstance[i];
                 }
             }
@@ -138,7 +153,7 @@ namespace Game.Framework
             return false;
         }
 
-        private void popQueueUI<T>(BaseUI ui) where T: BaseUI
+        private void popQueueUI<T>(BaseUI ui) where T : BaseUI
         {
             if (string.IsNullOrEmpty(ui?.queue) == false)
             {
@@ -161,7 +176,7 @@ namespace Game.Framework
 
                         // ! 这里因为会打开新的，所以老的关闭不播放关闭动画直接打开
                         var oldShowAnimation = false;
-                        this.showUIWith<T>(false, preUI.queue, oldShowAnimation,preUI.uiInstanceArgs).Forget();
+                        this.showUIWith<T>(false, preUI.queue, oldShowAnimation, preUI.uiInstanceArgs).Forget();
                     }
                 }
             }
@@ -207,7 +222,7 @@ namespace Game.Framework
             return null;
         }
 
-        public void closeUI<T>(bool needPopupQueue) where T: BaseUI
+        public void closeUI<T>(bool needPopupQueue) where T : BaseUI
         {
             BaseUI ui = null;
             for (int i = 0; i < this.uiList.Count;)
@@ -333,7 +348,7 @@ namespace Game.Framework
         /// <returns>返回打开的界面实例</returns>
         public async UniTask<T> showUI<T>(params object[] args) where T : BaseUI
         {
-            return await showUI<T>(false, null, false, args);
+            return await showUIWith<T>(false, null, false, args);
         }
 
         /**
@@ -347,7 +362,7 @@ namespace Game.Framework
         public async UniTask<T> showUIWith<T>(bool isNewInstance, string queue, bool animation, params object[] args) where T : BaseUI
         {
             // ! 确保先初始化了
-            await this.init();
+            await this.Init();
 
             T ui = default;
 
@@ -377,8 +392,8 @@ namespace Game.Framework
                 var fguiPkgs = tempUI.getFguiPackageResNames();
                 for (int index = 0; index < fguiPkgs?.Count; index++)
                 {
-                    var element  = fguiPkgs[index];
-                    await ResMgr.LoadFairyGUIPackage(element + "_fui.bytes", element);
+                    var element = fguiPkgs[index];
+                    await ResMgr.LoadFairyGUIPackage(element);
                 }
 
                 // todo: 是否存在这个界面其他资源需要准备好的情况
@@ -390,15 +405,17 @@ namespace Game.Framework
 
             return ui;
         }
-        
-        private T createUI<T>(bool isNewInstance,string queue,bool animation,params object[] args) where T : BaseUI
+
+        private T createUI<T>(bool isNewInstance, string queue, bool animation, params object[] args) where T : BaseUI
         {
             T ui = default;
-            if (isNewInstance == false) {
+            if (isNewInstance == false)
+            {
                 ui = this.getUI<T>();
             }
 
-            if (ui != null) {
+            if (ui != null)
+            {
                 return ui;
             }
 
@@ -427,20 +444,23 @@ namespace Game.Framework
 
             return ui;
         }
-        
+
         // -----------------------------------------------------------
         //----------------------quick api-----------------------------
         //------------------------------------------------------------
 
-        public void showWait(bool isShow) {
-            if (isShow) {
+        public void showWait(bool isShow)
+        {
+            if (isShow)
+            {
                 // console.log("show model wait");
                 FairyGUI.GRoot.inst.ShowModalWait();
-            } else {
+            }
+            else
+            {
                 // console.log("close model wait");
                 FairyGUI.GRoot.inst.CloseModalWait();
             }
         }
-        
     }
 }
