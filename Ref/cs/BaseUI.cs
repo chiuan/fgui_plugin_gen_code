@@ -27,20 +27,25 @@ namespace Game
 
         protected string packageName;
         protected string componentName;
+        
+        /// <summary>
+        /// 可以在继承类中修改这个界面的层级
+        /// </summary>
         protected UILayer layerName = UILayer.Normal;
+        
+        /// <summary>
+        /// 可以在继承类中修改是否全屏界面
+        /// </summary>
         protected bool isFullScreen = true;
 
         // 用于某些界面打开时候是否需要播放动画
         protected bool needShowAnimation = true;
 
-        // 异步界面加载的资源组
-        // private bool isAsyncUI = false;
-
         /**
         * 是否这个界面关闭时候不真的释放界面。只是隐藏起来。
         * 一般用于底部几个需要缓存的主界面
         */
-        private bool dontDestroyWhenClose = false;
+        protected bool dontDestroyWhenClose = false;
 
         public bool DontDestroyWhenClose
         {
@@ -50,7 +55,7 @@ namespace Game
         /**
         * 关闭所有界面接口不关闭这个界面例如加载进度界面
         */
-        private bool mDontDestroyAtCloseAll = false;
+        protected bool mDontDestroyAtCloseAll = false;
 
         public bool DontDestroyAtCloseAll
         {
@@ -70,7 +75,7 @@ namespace Game
         protected bool useLang = true;
 
         // 自动绑定FairyGUI元件
-        public BaseUI bindAll(FairyGUI.GComponent com)
+        public virtual BaseUI bindAll(FairyGUI.GComponent com)
         {
             return this;
         }

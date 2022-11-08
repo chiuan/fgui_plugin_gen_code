@@ -257,7 +257,7 @@ namespace Game
             }
         }
 
-        public void closeUIInstance<T>(T uiInstance, bool needPopupQueue) where T : BaseUI
+        public void closeUIInstance<T>(T uiInstance, bool needPopupQueue = false) where T : BaseUI
         {
             // 如果view已经被释放关闭了也不重复关闭
             if (uiInstance != null && uiInstance.getView() != null)
@@ -349,6 +349,16 @@ namespace Game
         public async UniTask<T> showUI<T>(params object[] args) where T : BaseUI
         {
             return await showUIWith<T>(false, null, false, args);
+        }
+
+        /// <summary>
+        /// 打开一个界面
+        /// </summary>
+        /// <param name="isNewInstance">是否每次打开new新的界面实例</param>
+        /// <param name="args">传给界面实现接口的可变参数</param>
+        public async UniTask<T> showUIWith<T>(bool isNewInstance, params object[] args) where T : BaseUI
+        {
+            return await showUIWith<T>(isNewInstance, string.Empty, false, args);
         }
 
         /**

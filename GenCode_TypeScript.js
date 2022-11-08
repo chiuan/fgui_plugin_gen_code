@@ -1,13 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.genCodeTs = void 0;
 const csharp_1 = require("csharp");
 const CodeWriter_1 = require("./CodeWriter");
 class GenClassInfo {
-    name;
-    varName;
-    supertype;
-    customType;
     constructor(name, varName, supertype, customtype) {
         this.name = name;
         this.varName = varName;

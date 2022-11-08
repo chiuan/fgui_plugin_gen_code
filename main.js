@@ -1,13 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onDestroy = exports.onPublish = void 0;
 const csharp_1 = require("csharp");
 const GenCode_CSharp_1 = require("./GenCode_CSharp");
 const App = csharp_1.FairyEditor.App;
 App.pluginManager.LoadUIPackage(App.pluginManager.basePath + "/" + eval("__dirname") + '/CustomInspector');
 class ExportCodeFlagInspector extends csharp_1.FairyEditor.View.PluginInspector {
-    combo;
-    ctrl_ref;
     constructor() {
         super();
         this.panel = csharp_1.FairyGUI.UIPackage.CreateObject("CustomInspector", "ExportCodeFlag").asCom;
@@ -54,7 +51,6 @@ App.inspectorView.AddInspector(() => new ExportCodeFlagInspector(), "GenCodeFlag
 App.docFactory.ConnectInspector("GenCodeFlag", "component", false, false);
 App.docFactory.ConnectInspector("GenCodeFlag", "component", true, false);
 class LangFlagInspector extends csharp_1.FairyEditor.View.PluginInspector {
-    combo;
     constructor() {
         super();
         this.panel = csharp_1.FairyGUI.UIPackage.CreateObject("CustomInspector", "LangFlag").asCom;
@@ -117,7 +113,7 @@ function onPublish(handler) {
     handler.genCode = false; //prevent default output
     console.log('开始生成代码');
     // genCodeTs(handler); 
-    (0, GenCode_CSharp_1.genCodeCS)(handler);
+    GenCode_CSharp_1.genCodeCS(handler);
 }
 exports.onPublish = onPublish;
 function onDestroy() {

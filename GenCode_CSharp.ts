@@ -199,13 +199,13 @@ function genCodeCS(handler: FairyEditor.PublishHandler) {
         writer.endBlock()
         writer.writeln()
 
-        writer.writeln('public new %s bindAll(FairyGUI.GComponent com)',classInfo.className + "_" + handler.pkg.name)
+        writer.writeln('public override BaseUI bindAll(FairyGUI.GComponent com)')
         writer.startBlock()
         writer.writeln('this.com = com;')
         // 开始绑定组件get
         genClassTypeMap.forEach((v, k) => {
             if (v.customType) {
-                writer.writeln("this." + k + " = new %s().bindAll(com.GetChild(\"%s\")?.asCom);", v.supertype, v.name)
+                writer.writeln("this." + k + " = new %s().bindAll(com.GetChild(\"%s\")?.asCom) as %s;", v.supertype, v.name,v.supertype)
             } else {
                 if (v.supertype == "Controller") {
                     writer.writeln("this." + k + " = com.GetController(\"%s\");", v.name)
