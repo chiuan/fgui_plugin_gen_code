@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace Game
         SceneLoading,
     }
 
-    public abstract class BaseUI
+    public abstract class BaseUI : IDisposable
     {
         public string name;
         public Type tag;
@@ -77,6 +78,7 @@ namespace Game
         // 自动绑定FairyGUI元件
         public virtual BaseUI bindAll(FairyGUI.GComponent com)
         {
+            this.view = com;
             return this;
         }
 
@@ -217,6 +219,8 @@ namespace Game
             {
                 this.view?.Dispose();
                 this.view = null;
+                
+                Dispose();
             }
             else
             {
@@ -249,6 +253,40 @@ namespace Game
 
         public virtual void onClose(params object[] args)
         {
+        }
+
+        public void Dispose()
+        {
+            if (this.view?.displayObject != null)
+            {
+                this.view.Dispose();
+                this.view = null;
+            }
+            
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 用于绑定某个GameObject对象生命周期
+        /// </summary>
+        /// <param name="go">如果这个对象Destroy了的话这个界面会被关闭</param>
+        protected void BindGameObjectOnDestroy(GameObject go)
+        {
+            Action func = async () =>
+            {
+                var ctx = go?.GetCancellationTokenOnDestroy();
+                while (ctx?.IsCancellationRequested == false)
+                {
+                    await UniTask.Yield();
+                }
+
+                // 关闭这个ui自身.
+                UIMgr.Instance?.closeUIInstance(this);     
+                
+                await Task.CompletedTask;
+            };
+            
+            func();
         }
     }
 }

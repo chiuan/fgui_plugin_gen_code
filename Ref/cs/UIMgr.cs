@@ -34,10 +34,10 @@ namespace Game
             isIniting = true;
             
             // * 必须先生成界面打开需要的层级
-            await ResMgr.LoadFairyGUIPackage("common");
+            await ResMgr.Instance.LoadFairyGUIPackage("common");
 
             // * 初始化游戏里面的界面的层级
-            await ResMgr.LoadFairyGUIPackage("loading");
+            await ResMgr.Instance.LoadFairyGUIPackage("loading");
             this.uiRoot = FairyGUI.UIPackage.CreateObject("loading", "UIRoot").asCom;
             FairyGUI.GRoot.inst.AddChild(this.uiRoot);
 
@@ -292,7 +292,7 @@ namespace Game
             for (int index = 0; index < this.uiList.Count; index++)
             {
                 var element = this.uiList[index];
-                if (element.isOpen)
+                if ((element?.isOpen ?? false) == true)
                 {
                     uis.Add(element);
                 }
@@ -403,7 +403,7 @@ namespace Game
                 for (int index = 0; index < fguiPkgs?.Count; index++)
                 {
                     var element = fguiPkgs[index];
-                    await ResMgr.LoadFairyGUIPackage(element);
+                    await ResMgr.Instance.LoadFairyGUIPackage(element);
                 }
 
                 // todo: 是否存在这个界面其他资源需要准备好的情况

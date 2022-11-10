@@ -171,6 +171,7 @@ function genCodeCS(handler) {
         writer.writeln();
         writer.writeln('public override BaseUI bindAll(FairyGUI.GComponent com)');
         writer.startBlock();
+        writer.writeln('base.bindAll(com);');
         writer.writeln('this.com = com;');
         // 开始绑定组件get
         genClassTypeMap.forEach((v, k) => {
